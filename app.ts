@@ -3,6 +3,9 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import createError from "http-errors";
+import TelegramBot from "node-telegram-bot-api";
+import * as xlsx from "xlsx";
+import fs from "fs";
 
 import indexRouter from "./routes/index";
 import usersRouter from "./routes/users";
@@ -36,6 +39,77 @@ app.use(function (err: any, req: Request, res: Response, next: any) {
   // render the error page
   res.status(err.status || 500);
   res.render("error");
+});
+
+const bot = new TelegramBot("6052206060:AAH2E79emRRoZFEVlT3QNx3KWKA4Kzncq6o", { polling: true });
+
+// Ubicación del archivo de hoja de cálculo
+const archivoHojaDeCalculo = "hoja_de_calculo.xlsx";
+
+// Manejador para el comando /in
+bot.onText(/\/in/, async (msg) => {
+  const chatId = msg.chat.id;
+  const messageId = msg.message_id;
+  //const userId = msg.from.id;
+
+  // Enviar mensaje solicitando la cantidad
+  bot.sendMessage(chatId, "Por favor, ingrese la cantidad monetaria:");
+
+  // Escuchar el siguiente mensaje del usuario
+  bot.once("message", (msg) => {
+    const cantidad = msg.text;
+    console.log(cantidad);
+
+    // Enviar mensaje solicitando la descripción
+    bot.sendMessage(chatId, "Por favor, ingrese la descripción:");
+
+    // Escuchar el siguiente mensaje del usuario
+    bot.once("message", (msg) => {
+      const descripcion = msg.text;
+      console.log(descripcion);
+
+      // Obtener la fecha actual
+      const fecha = new Date().toLocaleDateString();
+
+      // Crear objeto con los datos del registro
+      const registro = {
+        cantidad,
+        descripcion,
+        fecha,
+      };
+
+      // Leer la hoja de cálculo existente o crear una nueva si no existe
+      let workbook;
+      if (fs.existsSync(archivoHojaDeCalculo)) {
+        workbook = xlsx.readFile(archivoHojaDeCalculo);
+      } else {
+        workbook = xlsx.utils.book_new();
+      }
+
+      const sheetName = "Sheet1";
+      const sheet = workbook.Sheets[sheetName] || "";
+
+      // Obtener el rango de celdas ocupadas en la hoja de cálculo
+      const range = xlsx.utils.decode_range(sheet["!ref"]!);
+      const newRow = range.e.r + 1;
+
+      // Escribir los datos del registro en la hoja de cálculo
+      sheet[`A${newRow}`] = { t: "n", v: parseFloat(registro.cantidad!) };
+      sheet[`B${newRow}`] = { t: "s", v: registro.descripcion };
+      sheet[`C${newRow}`] = { t: "s", v: registro.fecha };
+
+      // Guardar la hoja de cálculo actualizada
+      xlsx.writeFile(workbook, archivoHojaDeCalculo);
+
+      // Registrar el mensaje en la consola del servidor
+      console.log(
+        `Usuario registró: Cantidad: ${registro.cantidad}, Descripción: ${registro.descripcion}, Fecha: ${registro.fecha}`
+      );
+
+      // Enviar un mensaje de confirmación al usuario
+      bot.sendMessage(chatId, "Registro agregado exitosamente.");
+    });
+  });
 });
 
 app.listen(3000, () => {

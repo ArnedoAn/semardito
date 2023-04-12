@@ -11,10 +11,13 @@
   "dependencies": {
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
-    "express": "~4.16.1",
+    "express": "^4.18.2",
     "http-errors": "~1.6.3",
-    "jade": "~1.11.0",
-    "morgan": "~1.9.1"
+    "jade": "^0.29.0",
+    "morgan": "~1.9.1",
+    "node-telegram-bot-api": "^0.61.0",
+    "typescript": "^5.0.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.3",
@@ -22,8 +25,9 @@
     "@types/http-errors": "^2.0.1",
     "@types/morgan": "^1.9.4",
     "@types/node": "^18.15.11",
+    "@types/node-telegram-bot-api": "^0.61.6",
+    "@types/xlsx": "^0.0.36",
     "concurrently": "^8.0.1",
-    "nodemon": "^2.0.22",
-    "typescript": "^5.0.4"
+    "nodemon": "^2.0.22"
   }
 }
