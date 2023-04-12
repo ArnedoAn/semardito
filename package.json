@@ -6,7 +6,7 @@
     "start": "node dist/app.js",
     "dev": "nodemon",
     "build": "npx tsc ",
-    "start:dev": "ts-node .src/app.ts"
+    "start:dev": "ts-node app.ts"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
@@ -17,6 +17,7 @@
     "jade": "^0.29.0",
     "morgan": "~1.9.1",
     "node-telegram-bot-api": "^0.61.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.4",
     "xlsx": "^0.18.5"
   },
