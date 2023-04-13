@@ -33,12 +33,16 @@ const bot = new TelegramBot(token!, {
 
 // Ubicación del archivo de hoja de cálculo
 const archivoContabilidad = path.join(
-  __dirname,
+  process.cwd(),
   "documents",
   "contabilidad.xlsx"
 );
 
-const archivoAsistencia = path.join(__dirname, "documents", "asistencia.xlsx");
+const archivoAsistencia = path.join(
+  process.cwd(),
+  "documents",
+  "asistencia.xlsx"
+);
 
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
@@ -71,35 +75,60 @@ bot.onText(/\/money/, async (msg) => {
     },
   });
 
-  bot.onReplyToMessage(chatId, msgA.message_id, async (msgA_1) => {
-    const cantidad = parseFloat(msgA_1.text!);
-    inputContabilidad.cantidad = cantidad;
-    const msgB = await bot.sendMessage(chatId, "Razón del dinero:", {
-      reply_markup: {
-        force_reply: true,
-      },
+  // Promesa que se resolverá cuando el usuario responda al primer mensaje
+  const respuestaA = new Promise<void>((resolve) => {
+    bot.onReplyToMessage(chatId, msgA.message_id, async (msgA_1) => {
+      const cantidad = parseFloat(msgA_1.text!);
+      inputContabilidad.cantidad = cantidad;
+      resolve();
     });
+  });
+
+  await respuestaA;
+
+  const msgB = await bot.sendMessage(chatId, "Razón del dinero:", {
+    reply_markup: {
+      force_reply: true,
+    },
+  });
+
+  // Promesa que se resolverá cuando el usuario responda al segundo mensaje
+  const respuestaB = new Promise<void>((resolve) => {
     bot.onReplyToMessage(chatId, msgB.message_id, async (msgB_1) => {
       const descripcion = msgB_1.text!;
       inputContabilidad.descripcion = descripcion;
-      const msgC = await bot.sendMessage(chatId, "Ingrese su nombre:", {
-        reply_markup: {
-          force_reply: true,
-        },
-      });
-      const nombreUsuario = msgC.text!;
-      inputContabilidad.nombreUsuario = nombreUsuario;
+      resolve();
     });
   });
+
+  await respuestaB;
+
+  const msgC = await bot.sendMessage(chatId, "Ingrese su nombre:", {
+    reply_markup: {
+      force_reply: true,
+    },
+  });
+
+  // Promesa que se resolverá cuando el usuario responda al tercer mensaje
+  const respuestaC = new Promise<void>((resolve) => {
+    bot.onReplyToMessage(chatId, msgC.message_id, async (msgC_1) => {
+      const nombreUsuario = msgC_1.text!;
+      inputContabilidad.nombreUsuario = nombreUsuario;
+      resolve();
+    });
+  });
+
+  await respuestaC;
 
   const response = await toContabilidad(inputContabilidad, archivoContabilidad);
 
   if (response) {
-    bot.sendMessage(chatId, "Money On 💸 💸");
+    await bot.sendMessage(chatId, "Cada vez menos plata 💀 (Todo salió bien)");
   } else {
-    bot.sendMessage(chatId, "Que charada, algo salió mal...");
+    await bot.sendMessage(chatId, "Que charada, algo salió mal...");
   }
 });
+
 
 app.listen(3000, () => {
   console.log("Server started on port 3000");

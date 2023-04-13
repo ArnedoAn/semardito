@@ -49,6 +49,7 @@ const veryfySheet = async (archivoHojaDeCalculo: any) => {
       { header: "Cantidad", key: "cantidad" },
       { header: "Descripción", key: "descripcion" },
       { header: "Fecha", key: "fecha" },
+      { header: "Nombre de usuario", key: "nombreUsuario"}
     ];
     workbook.xlsx
       .writeFile(archivoHojaDeCalculo)
