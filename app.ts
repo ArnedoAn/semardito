@@ -54,13 +54,6 @@ bot.onText(/\/start/, async (msg) => {
   );
 });
 
-bot.onText(/\/out/, async (msg) => {
-  const chatId = msg.chat.id;
-  const messageId = msg.message_id;
-
-  bot.sendMessage(chatId, "Por favor, ingrese la cantidad monetaria:");
-});
-
 bot.onText(/\/money/, async (msg) => {
   const chatId = msg.chat.id;
   const inputContabilidad = {
