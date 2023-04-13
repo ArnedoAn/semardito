@@ -1,9 +1,12 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import createError from "http-errors";
 import TelegramBot from "node-telegram-bot-api";
+import toContabilidad from "./routes/contabilidad";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 
@@ -22,8 +25,9 @@ app.use(function (req, res, next) {
   next(createError(404));
 });
 
+const token = process.env.TELEGRAM_TOKEN;
 
-const bot = new TelegramBot("6052206060:AAH2E79emRRoZFEVlT3QNx3KWKA4Kzncq6o", {
+const bot = new TelegramBot(token!, {
   polling: true,
 });
 
@@ -36,33 +40,7 @@ const archivoContabilidad = path.join(
 
 const archivoAsistencia = path.join(__dirname, "documents", "asistencia.xlsx");
 
-// Verificar si el archivo existe
-const veryfySheet = async (archivoHojaDeCalculo: any) => {
-  if (!fs.existsSync(archivoHojaDeCalculo)) {
-    // Si no existe, crearlo
-    const workbook = new Excel.Workbook();
-    const sheet = workbook.addWorksheet("Sheet1");
-    // Configurar las columnas y encabezados de la hoja de cálculo
-    sheet.columns = [
-      { header: "Cantidad", key: "cantidad" },
-      { header: "Descripción", key: "descripcion" },
-      { header: "Fecha", key: "fecha" },
-    ];
-    workbook.xlsx
-      .writeFile(archivoHojaDeCalculo)
-      .then(() => {
-        console.log("Archivo de hoja de cálculo creado exitosamente");
-        // Continuar con la lógica de manejo de mensajes de Telegram
-      })
-      .catch((err: any) => {
-        console.error("Error al crear archivo de hoja de cálculo:", err);
-      });
-  } else {
-    console.log("Archivo de hoja de cálculo encontrado");
-  }
-};
-
-bot.onText(/\/start/, (msg) => {
+bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
   const messageId = msg.message_id;
 
@@ -72,13 +50,56 @@ bot.onText(/\/start/, (msg) => {
   );
 });
 
-bot.onText(/\/out/, (msg) => {
+bot.onText(/\/out/, async (msg) => {
   const chatId = msg.chat.id;
   const messageId = msg.message_id;
 
   bot.sendMessage(chatId, "Por favor, ingrese la cantidad monetaria:");
 });
 
+bot.onText(/\/money/, async (msg) => {
+  const chatId = msg.chat.id;
+  const inputContabilidad = {
+    cantidad: 0,
+    descripcion: "Por asignar (?)",
+    nombreUsuario: "Por asignar (?)",
+  };
+
+  const msgA = await bot.sendMessage(chatId, "Ingrese la cantidad monetaria:", {
+    reply_markup: {
+      force_reply: true,
+    },
+  });
+
+  bot.onReplyToMessage(chatId, msgA.message_id, async (msgA_1) => {
+    const cantidad = parseFloat(msgA_1.text!);
+    inputContabilidad.cantidad = cantidad;
+    const msgB = await bot.sendMessage(chatId, "Razón del dinero:", {
+      reply_markup: {
+        force_reply: true,
+      },
+    });
+    bot.onReplyToMessage(chatId, msgB.message_id, async (msgB_1) => {
+      const descripcion = msgB_1.text!;
+      inputContabilidad.descripcion = descripcion;
+      const msgC = await bot.sendMessage(chatId, "Ingrese su nombre:", {
+        reply_markup: {
+          force_reply: true,
+        },
+      });
+      const nombreUsuario = msgC.text!;
+      inputContabilidad.nombreUsuario = nombreUsuario;
+    });
+  });
+
+  const response = await toContabilidad(inputContabilidad, archivoContabilidad);
+
+  if (response) {
+    bot.sendMessage(chatId, "Money On 💸 💸");
+  } else {
+    bot.sendMessage(chatId, "Que charada, algo salió mal...");
+  }
+});
 
 app.listen(3000, () => {
   console.log("Server started on port 3000");

@@ -1,9 +1,11 @@
 import Excel from "exceljs";
+import * as fs from "fs";
 
 export default async function insertContability(
   { cantidad, descripcion, nombreUsuario }: any,
   sheetPath: any
 ) {
+  await veryfySheet(sheetPath);
   const fecha = new Date().toLocaleDateString();
   const workbook = new Excel.Workbook();
   try {
@@ -36,3 +38,28 @@ export default async function insertContability(
     return false;
   }
 }
+
+const veryfySheet = async (archivoHojaDeCalculo: any) => {
+  if (!fs.existsSync(archivoHojaDeCalculo)) {
+    // Si no existe, crearlo
+    const workbook = new Excel.Workbook();
+    const sheet = workbook.addWorksheet("Sheet1");
+    // Configurar las columnas y encabezados de la hoja de cálculo
+    sheet.columns = [
+      { header: "Cantidad", key: "cantidad" },
+      { header: "Descripción", key: "descripcion" },
+      { header: "Fecha", key: "fecha" },
+    ];
+    workbook.xlsx
+      .writeFile(archivoHojaDeCalculo)
+      .then(() => {
+        console.log("Archivo de hoja de cálculo creado exitosamente");
+        // Continuar con la lógica de manejo de mensajes de Telegram
+      })
+      .catch((err: any) => {
+        console.error("Error al crear archivo de hoja de cálculo:", err);
+      });
+  } else {
+    console.log("Archivo de hoja de cálculo encontrado");
+  }
+};
