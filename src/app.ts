@@ -6,6 +6,8 @@ import createError from "http-errors";
 import TelegramBot from "node-telegram-bot-api";
 import toContabilidad from "./routes/contabilidad";
 import toAsistencia from "./routes/asistencia";
+import fs from "fs";
+import { verifyUser, addUser } from "./routes/adminSettings";
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -26,13 +28,27 @@ app.use(function (req, res, next) {
   next(createError(404));
 });
 
+const errorLogPath = path.join(process.cwd(), "documents", "errorLog.log");
+
+export async function logError(error: Error): Promise<void> {
+  const logMessage = `${new Date().toISOString()}: ${error.message}\n`;
+  try {
+    if (!fs.existsSync(errorLogPath)) {
+      await fs.promises.writeFile(errorLogPath, "");
+    }
+    await fs.promises.appendFile(errorLogPath, logMessage);
+    console.log("Mensaje de registro guardado con éxito");
+  } catch (error) {
+    console.error("Error al escribir en el archivo de registro", error);
+  }
+}
+
 const token = process.env.TELEGRAM_TOKEN;
 
 const bot = new TelegramBot(token!, {
   polling: true,
 });
 
-// Ubicación del archivo de hoja de cálculo
 const archivoContabilidad = path.join(
   process.cwd(),
   "documents",
@@ -45,24 +61,83 @@ const archivoAsistencia = path.join(
   "asistencia.xlsx"
 );
 
+const getUserId = (msg: TelegramBot.Message) => {
+  return msg.from?.id;
+};
+
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
+  const userId = getUserId(msg);
 
   bot.sendMessage(
     chatId,
-    "Bienvenido al bot de Semard. Tenga en cuenta que su uso es exclusivo para el grupo de Semard. Si desea conocer los comandos disponibles, por favor, escriba /help"
+    `Hola, soy Semardito. Aquí tienes tu ID ${userId}, enviaselo al admin 🤖`
   );
 });
 
-bot.onText(/\/out/, async (msg) => {
+bot.onText(/\/newUser/, async (msg) => {
   const chatId = msg.chat.id;
-  const messageId = msg.message_id;
+  let user = {
+    telegramId: 0,
+    firstName: "",
+    lastName: "",
+  };
+  const userId = getUserId(msg);
+  if (userId?.toString() != process.env.ADMIN_ID) {
+    bot.sendMessage(chatId, "Literalmente no tienes level para esto 🐥");
+    return;
+  }
+  const msgA = await bot.sendMessage(
+    chatId,
+    "Ingrese nombre y apellido (Juanito Alimaña):",
+    {
+      reply_markup: {
+        force_reply: true,
+      },
+    }
+  );
 
-  bot.sendMessage(chatId, "Por favor, ingrese la cantidad monetaria:");
+  // Promesa que se resolverá cuando el usuario responda al primer mensaje
+  const respuestaA = new Promise<void>((resolve) => {
+    bot.onReplyToMessage(chatId, msgA.message_id, async (msgA_1) => {
+      const names = msgA_1.text!.split(" ");
+      user.firstName = names[0];
+      user.lastName = names[1];
+      resolve();
+    });
+  });
+
+  await respuestaA;
+
+  const msgB = await bot.sendMessage(chatId, "Ingrese el ID de Telegram:", {
+    reply_markup: {
+      force_reply: true,
+    },
+  });
+
+  // Promesa que se resolverá cuando el usuario responda al segundo mensaje
+  const respuestaB = new Promise<void>((resolve) => {
+    bot.onReplyToMessage(chatId, msgB.message_id, async (msgB_1) => {
+      user.telegramId = parseInt(msgB_1.text!);
+      resolve();
+    });
+  });
+
+  await respuestaB;
+
+  if (await addUser(user)) {
+    await bot.sendMessage(chatId, "Usuario agregado con éxito");
+  } else {
+    await bot.sendMessage(chatId, "Error al agregar usuario");
+  }
 });
 
 bot.onText(/\/money/, async (msg) => {
   const chatId = msg.chat.id;
+  if (!(await verifyUser(getUserId(msg)!))) {
+    bot.sendMessage(chatId, "No te da para tanto 👍");
+    return;
+  }
   const inputContabilidad = {
     cantidad: 0,
     descripcion: "Por asignar (?)",
@@ -131,10 +206,14 @@ bot.onText(/\/money/, async (msg) => {
 
 bot.onText(/\/asistencia/, async (msg) => {
   const chatId = msg.chat.id;
+  if (!(await verifyUser(getUserId(msg)!))) {
+    bot.sendMessage(chatId, "No te da para tanto 👍");
+    return;
+  }
   let nombres: string;
   const msg1 = await bot.sendMessage(
     chatId,
-    "Ingrese los nombres seguido de una coma (Juanito, Pepito,...):",
+    "Ingrese los apellidos seguido de una coma (A, B,...):",
     {
       reply_markup: {
         force_reply: true,
@@ -161,12 +240,14 @@ bot.onText(/\/asistencia/, async (msg) => {
 
   // Split the string on comma separation and put the items in an array
   const listNombres: string[] = nombres!.replace(" ", "").split(",");
+  const mes = getMonthName(month);
 
-  const response = await toAsistencia({
-    date: fecha,
-    names: listNombres,
-    filePath: archivoAsistencia,
-  });
+  const response = await toAsistencia(
+    fecha,
+    listNombres,
+    mes,
+    archivoAsistencia
+  );
 
   if (response) {
     await bot.sendMessage(chatId, "Si señor, pura gente responsable 👍");
@@ -174,6 +255,25 @@ bot.onText(/\/asistencia/, async (msg) => {
     await bot.sendMessage(chatId, "Ya nos hackearon, algo salió mal...");
   }
 });
+
+//convert moth number to string(spanish with first letter in uppercase)
+function getMonthName(month: number) {
+  const monthNames = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+  return monthNames[month - 1];
+}
 
 app.listen(3000, () => {
   console.log("Server started on port 3000");
