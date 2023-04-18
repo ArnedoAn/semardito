@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { logError } from "./extraFunctions";
-import { constants } from "../constants/constants";
+import { logError } from "../extraFunctions";
+import { constants } from "../../constants/constants";
 
 const prisma = constants.prisma;
 

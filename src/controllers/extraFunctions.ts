@@ -19,4 +19,4 @@ export async function logError(error: Error): Promise<void> {
 
 export const getUserId = (msg: TelegramBot.Message) => {
     return msg.from?.id;
-  };
+};

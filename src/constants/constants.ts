@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import path from "path";
 import * as dotenv from "dotenv";
+import TelegramBot from "node-telegram-bot-api";
 dotenv.config();
 
 export const constants = {
@@ -12,4 +13,13 @@ export const constants = {
     process.env.LOGFILE_NAME || "errorLog.log"
   ),
   prisma: new PrismaClient(),
+};
+
+export const bot = new TelegramBot(constants.telegramToken!, {
+  polling: true,
+});
+
+export const credenciales = {
+  client_email: process.env.CLIENT_EMAIL,
+  private_key: process.env.PRIVATE_KEY,
 };
