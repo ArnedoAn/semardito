@@ -1,5 +1,7 @@
 import { EscribirSheet } from "./asistencia_control_sheet";
 import { bot } from "../../constants/constants";
+import { getUserId } from "../extraFunctions";
+import { verifyUser } from "../admin/adminSettings";
 
 // Obtener dia actual
 const date = new Date();
@@ -9,7 +11,12 @@ const diaActual = new Intl.DateTimeFormat("es-ES", opciones).format(date);
 console.log("Funcionando");
 bot.onText(/\/asistencia/, async (msg) => {
   const chatId = msg.chat.id;
-  if (diaActual === "Martes" || diaActual === "Viernes") {
+  if (!(await verifyUser(getUserId(msg)!))) {
+    bot.sendMessage(chatId, "No te da para tanto 👍");
+    return;
+  }
+  console.log(diaActual)
+  if (diaActual === "martes" || diaActual === "viernes") {
     const chatId = msg.chat.id;
     const InputAsistencia = {
       Nombre: "",

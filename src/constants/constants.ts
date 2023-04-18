@@ -19,7 +19,4 @@ export const bot = new TelegramBot(constants.telegramToken!, {
   polling: true,
 });
 
-export const credenciales = {
-  client_email: process.env.CLIENT_EMAIL,
-  private_key: process.env.PRIVATE_KEY,
-};
+export const credenciales = require("../../key.json");

@@ -1,8 +1,14 @@
 import { bot } from "../../constants/constants";
+import { verifyUser } from "../admin/adminSettings";
+import { getUserId } from "../extraFunctions";
 import { EscribirSheet } from "./contabilidad_control_sheet";
 
 bot.onText(/\/money/, async (msg) => {
   const chatId = msg.chat.id;
+  if (!(await verifyUser(getUserId(msg)!))) {
+    bot.sendMessage(chatId, "No te da para tanto 👍");
+    return;
+  }
   const inputContabilidad = {
     Cantidad: "Por asignar.",
     Descripcion: "Por asignar.",
