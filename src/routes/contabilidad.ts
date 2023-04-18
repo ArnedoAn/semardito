@@ -1,5 +1,6 @@
 import Excel from "exceljs";
 import * as fs from "fs";
+import { logError } from "../app";
 
 export default async function insertContability(
   { cantidad, descripcion, nombreUsuario }: any,
@@ -33,8 +34,9 @@ export default async function insertContability(
       `Usuario registró: Cantidad: ${cantidad}, Descripción: ${descripcion}, Fecha: ${fecha}`
     );
     return true;
-  } catch (err) {
+  } catch (err: Error | any) {
     console.log(err);
+    await logError(err);
     return false;
   }
 }
@@ -49,7 +51,7 @@ const veryfySheet = async (archivoHojaDeCalculo: any) => {
       { header: "Cantidad", key: "cantidad" },
       { header: "Descripción", key: "descripcion" },
       { header: "Fecha", key: "fecha" },
-      { header: "Nombre de usuario", key: "nombreUsuario"}
+      { header: "Nombre de usuario", key: "nombreUsuario" },
     ];
     workbook.xlsx
       .writeFile(archivoHojaDeCalculo)
