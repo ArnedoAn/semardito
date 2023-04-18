@@ -1,6 +1,6 @@
 import Excel from "exceljs";
 import * as fs from "fs";
-import { logError } from "../app";
+import { logError } from "./extraFunctions";
 
 export default async function insertContability(
   { cantidad, descripcion, nombreUsuario }: any,

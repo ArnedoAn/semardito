@@ -4,66 +4,25 @@ import cookieParser from "cookie-parser";
 import logger from "morgan";
 import createError from "http-errors";
 import TelegramBot from "node-telegram-bot-api";
-import toContabilidad from "./routes/contabilidad";
-import toAsistencia from "./routes/asistencia";
-import fs from "fs";
-import { verifyUser, addUser } from "./routes/adminSettings";
-import * as dotenv from "dotenv";
-dotenv.config();
+import { verifyUser, addUser } from "./controllers/adminSettings";
+import { getUserId } from "./controllers/extraFunctions";
+import { constants } from "./constants/constants";
 
 const app = express();
-
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
 
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
 
-const errorLogPath = path.join(process.cwd(), "documents", "errorLog.log");
-
-export async function logError(error: Error): Promise<void> {
-  const logMessage = `${new Date().toISOString()}: ${error.message}\n`;
-  try {
-    if (!fs.existsSync(errorLogPath)) {
-      await fs.promises.writeFile(errorLogPath, "");
-    }
-    await fs.promises.appendFile(errorLogPath, logMessage);
-    console.log("Mensaje de registro guardado con éxito");
-  } catch (error) {
-    console.error("Error al escribir en el archivo de registro", error);
-  }
-}
-
-const token = process.env.TELEGRAM_TOKEN;
-
-const bot = new TelegramBot(token!, {
+const bot = new TelegramBot(constants.telegramToken!, {
   polling: true,
 });
-
-const archivoContabilidad = path.join(
-  process.cwd(),
-  "documents",
-  "contabilidad.xlsx"
-);
-
-const archivoAsistencia = path.join(
-  process.cwd(),
-  "documents",
-  "asistencia.xlsx"
-);
-
-const getUserId = (msg: TelegramBot.Message) => {
-  return msg.from?.id;
-};
 
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
@@ -195,13 +154,13 @@ bot.onText(/\/money/, async (msg) => {
 
   await respuestaC;
 
-  const response = await toContabilidad(inputContabilidad, archivoContabilidad);
+  // const response = await toContabilidad(inputContabilidad, archivoContabilidad);
 
-  if (response) {
-    await bot.sendMessage(chatId, "Cada vez menos plata 💀 (Todo salió bien)");
-  } else {
-    await bot.sendMessage(chatId, "Que charada, algo salió mal...");
-  }
+  // if (response) {
+  //   await bot.sendMessage(chatId, "Cada vez menos plata 💀 (Todo salió bien)");
+  // } else {
+  //   await bot.sendMessage(chatId, "Que charada, algo salió mal...");
+  // }
 });
 
 bot.onText(/\/asistencia/, async (msg) => {
@@ -242,18 +201,18 @@ bot.onText(/\/asistencia/, async (msg) => {
   const listNombres: string[] = nombres!.replace(" ", "").split(",");
   const mes = getMonthName(month);
 
-  const response = await toAsistencia(
-    fecha,
-    listNombres,
-    mes,
-    archivoAsistencia
-  );
+  // const response = await toAsistencia(
+  //   fecha,
+  //   listNombres,
+  //   mes,
+  //   archivoAsistencia
+  // );
 
-  if (response) {
-    await bot.sendMessage(chatId, "Si señor, pura gente responsable 👍");
-  } else {
-    await bot.sendMessage(chatId, "Ya nos hackearon, algo salió mal...");
-  }
+  // if (response) {
+  //   await bot.sendMessage(chatId, "Si señor, pura gente responsable 👍");
+  // } else {
+  //   await bot.sendMessage(chatId, "Ya nos hackearon, algo salió mal...");
+  // }
 });
 
 //convert moth number to string(spanish with first letter in uppercase)

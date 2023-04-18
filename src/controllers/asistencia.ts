@@ -1,5 +1,5 @@
 import { spawn, exec } from "child_process";
-import { logError } from "../app";
+import { logError } from "./extraFunctions";
 import path from "path";
 
 export default async function markAttendance(

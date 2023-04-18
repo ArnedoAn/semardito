@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { logError } from "../app";
-const prisma = new PrismaClient();
+import { logError } from "./extraFunctions";
+import { constants } from "../constants/constants";
+
+const prisma = constants.prisma;
 
 export async function addUser({
   telegramId,
