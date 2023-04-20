@@ -6,7 +6,7 @@ import { verifyUser } from "../admin/adminSettings";
 // Obtener dia actual
 const date = new Date();
 const opciones: Intl.DateTimeFormatOptions = { weekday: "long" };
-const diaActual = new Intl.DateTimeFormat("es-ES", opciones).format(date);
+const diaActual = new Intl.DateTimeFormat("es-CO", opciones).format(date);
 
 console.log("Funcionando");
 bot.onText(/\/asistencia/, async (msg) => {
