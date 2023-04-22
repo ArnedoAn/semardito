@@ -2,6 +2,9 @@ import { bot, constants } from "../../constants/constants";
 import { getUserId } from "../extraFunctions";
 import { addUser } from "./adminSettings";
 
+// Administadores de la base de datos
+const admins = [constants.adminId_a, constants.adminId_j]
+
 bot.onText(/\/newUser/, async (msg) => {
   const chatId = msg.chat.id;
   let user = {
@@ -9,8 +12,9 @@ bot.onText(/\/newUser/, async (msg) => {
     firstName: "",
     lastName: "",
   };
+
   const userId = getUserId(msg);
-  if (userId?.toString() != constants.adminId) {
+  if (!admins.includes(userId?.toString())) {
     bot.sendMessage(chatId, "Literalmente no tienes level para esto 🐥");
     return;
   }

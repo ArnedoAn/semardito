@@ -1,5 +1,6 @@
 import { logError } from "../extraFunctions";
 import { constants } from "../../constants/constants";
+import User from "../../interfaces/interfaces_user";
 
 const prisma = constants.prisma;
 
@@ -7,12 +8,9 @@ export async function addUser({
   telegramId,
   firstName,
   lastName,
-}: {
-  telegramId: number;
-  firstName: string;
-  lastName: string;
-}) {
+}: User) {
   try {
+    console.log(telegramId)
     const user = await prisma.user.create({
       data: {
         telegramId,
