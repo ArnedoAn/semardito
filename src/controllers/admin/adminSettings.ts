@@ -11,7 +11,7 @@ export async function addUser({
 }: User) {
   try {
     console.log(telegramId)
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         telegramId,
         firstName,

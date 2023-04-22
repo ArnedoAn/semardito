@@ -3,11 +3,6 @@ import { bot } from "../../constants/constants";
 import { getDateString, getUserId } from "../extraFunctions";
 import { verifyUser } from "../admin/adminSettings";
 
-// Obtener dia actual
-// const date = new Date();
-// const opciones: Intl.DateTimeFormatOptions = { weekday: "long" };
-// const diaActual = new Intl.DateTimeFormat("es-CO", opciones).format(date);
-
 console.log("Funcionando");
 bot.onText(/\/asistencia/, async (msg) => {
   const chatId = msg.chat.id;
@@ -16,8 +11,6 @@ bot.onText(/\/asistencia/, async (msg) => {
     return;
   }
 
-  // if (diaActual === "martes" || diaActual === "viernes") {
-  // const chatId = msg.chat.id;
   const InputAsistencia = {
     Nombre: "",
     Fecha: "Por asignar.",
@@ -54,7 +47,5 @@ bot.onText(/\/asistencia/, async (msg) => {
   } else {
     await bot.sendMessage(chatId, "Ya nos hackearon, algo salió mal...");
   }
-  // } else {
-  //   bot.sendMessage(chatId, "Lo sentimos pero no es dia de asistencia 💀");
-  // }
+
 });
