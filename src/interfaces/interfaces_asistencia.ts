@@ -2,6 +2,7 @@
 export interface Asistencia {
     // formato: "DD/MM/YYYY"
     Nombre: string;
-    Fecha: string;
-    Hora: string;
+    Dia: string;
+    Mes: string;
+    Año: string; 
 }

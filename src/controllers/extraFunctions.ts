@@ -2,6 +2,7 @@ import fs from "fs";
 import TelegramBot from "node-telegram-bot-api";
 import { constants } from "../constants/constants";
 
+const prisma = constants.prisma;
 const errorLogPath = constants.logFilePath;
 
 export async function logError(error: Error): Promise<void> {
@@ -21,19 +22,12 @@ export const getUserId = (msg: TelegramBot.Message) => {
   return msg.from?.id;
 };
 
-export const getDateString = (): string[] => {
-  //how to get a date with format dd/mm/yyyy in javascript
-  const date = new Date();
+export const getUserName = async (id: number) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      telegramId: id,
+    },
+  });
 
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hour = date.getHours();
-  const minute = date.getMinutes();
-  const second = date.getSeconds();
-
-  const fecha = `${day}/${month}/${year}`;
-  const hora = `${hour}:${minute}:${second}`;
-
-  return [fecha, hora]
-}
+  return `${user?.firstName} ${user?.lastName}` || "Usuario desconocido";
+};

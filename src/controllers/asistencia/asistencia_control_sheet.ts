@@ -26,7 +26,7 @@ export const EscribirSheet = async (data: Asistencia): Promise<boolean> => {
     if (typeof sheet === "object") {
       // Añadir registro a la sheet
       await sheet.addRow(data);
-      console.log("Asistencia exitosa");
+      console.log("Asistencia exitoso");
 
       return true;
     } else {

@@ -6,8 +6,7 @@ dotenv.config();
 
 export const constants = {
   telegramToken: process.env.TELEGRAM_TOKEN,
-  adminId_a: process.env.ADMIN_ID_A,
-  adminId_j: process.env.ADMIN_ID_J,
+  adminId: process.env.ADMIN_ID,
   logFilePath: path.join(
     process.cwd(),
     process.env.LOGFILE_PATH || "documents",

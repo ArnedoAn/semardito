@@ -1,12 +1,12 @@
 import { bot } from "../../constants/constants";
 import { verifyUser } from "../admin/adminSettings";
-import { getUserId } from "../extraFunctions";
+import { getUserId, getUserName } from "../extraFunctions";
 import { EscribirSheet } from "./contabilidad_control_sheet";
 
 bot.onText(/\/money/, async (msg) => {
   const chatId = msg.chat.id;
   if (!(await verifyUser(getUserId(msg)!))) {
-    bot.sendMessage(chatId, "No te da para tanto 👍");
+    bot.sendMessage(chatId, "Al parecer no haces parte de Semard 🤔");
     return;
   }
   const inputContabilidad = {
@@ -52,22 +52,7 @@ bot.onText(/\/money/, async (msg) => {
 
   await respuestaB;
 
-  const msgC = await bot.sendMessage(chatId, "Ingrese su nombre:", {
-    reply_markup: {
-      force_reply: true,
-    },
-  });
-
-  // Promesa que se resolverá cuando el usuario responda al tercer mensaje
-  const respuestaC = new Promise<void>((resolve) => {
-    bot.onReplyToMessage(chatId, msgC.message_id, async (msgC_1) => {
-      const nombreUsuario = msgC_1.text!;
-      inputContabilidad.Nombre = nombreUsuario;
-      resolve();
-    });
-  });
-
-  await respuestaC;
+  inputContabilidad.Nombre = await getUserName(getUserId(msg)!);
 
   //how to get a date with format dd/mm/yyyy in javascript
   const date = new Date();
@@ -83,6 +68,6 @@ bot.onText(/\/money/, async (msg) => {
   if (response) {
     await bot.sendMessage(chatId, "Cada vez menos plata 💀 (Todo salió bien)");
   } else {
-    await bot.sendMessage(chatId, "Que charada, algo salió mal...");
+    await bot.sendMessage(chatId, "Ups, algo salió mal...");
   }
 });

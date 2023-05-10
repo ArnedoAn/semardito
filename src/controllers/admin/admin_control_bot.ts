@@ -2,20 +2,16 @@ import { bot, constants } from "../../constants/constants";
 import { getUserId } from "../extraFunctions";
 import { addUser } from "./adminSettings";
 
-// Administadores de la base de datos
-const admins = [constants.adminId_a, constants.adminId_j]
-
-bot.onText(/\/newUser/, async (msg) => {
+bot.onText(/\/newuser/, async (msg) => {
   const chatId = msg.chat.id;
   let user = {
     telegramId: 0,
     firstName: "",
     lastName: "",
   };
-
   const userId = getUserId(msg);
-  if (!admins.includes(userId?.toString())) {
-    bot.sendMessage(chatId, "Literalmente no tienes level para esto 🐥");
+  if (userId?.toString() != constants.adminId) {
+    bot.sendMessage(chatId, "No tienes permiso para usar este comando");
     return;
   }
   const msgA = await bot.sendMessage(
