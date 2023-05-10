@@ -13,6 +13,7 @@ export const constants = {
     process.env.LOGFILE_NAME || "errorLog.log"
   ),
   prisma: new PrismaClient(),
+  port: process.env.PORT || 3001,
 };
 
 export const bot = new TelegramBot(constants.telegramToken!, {
