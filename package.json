@@ -6,7 +6,7 @@
   "main": "dist/app.js",
   "author": "Andrés Arnedo & Semard",
   "scripts": {
-    "start": "npm run build && node dist/app.js",
+    "start": "node dist/app.js",
     "dev": "nodemon",
     "build": "npx tsc ",
     "start:dev": "ts-node app.ts"
